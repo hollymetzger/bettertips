@@ -30,10 +30,10 @@ def get_square_payments():
     payment_list = []
     for payment in payments:
 
-        # id = payment['id']
-        # order_id = payment['order_id']
         payment_time = payment['created_at']
-        updated_at = payment['updated_at']
+        
+        if 'device_details' in payment:
+            device_details = payment['device_details']
         
         if 'tip_money' in payment:
             tip_money = payment['tip_money']
@@ -41,14 +41,48 @@ def get_square_payments():
         else:
             tip_amount = '0.0'
         
-        payment_list.append({'time': payment_time, 'tip_amount': tip_amount})
+        payment_list.append({'time': payment_time, 'tip_amount': tip_amount, 'device_details': device_details})
 
     return payment_list
 
 
 
-
+# get list of payments
 list = get_square_payments()
 
+
+# calculate total server and sushi tips
+servertips = 0
+sushitips = 0
 for p in list:
-    print(p)
+    if (p['device_details']['device_installation_id']) == '778C7517-2B72-4EEE-8041-F1B024304390':
+        servertips += float(p['tip_amount'])
+    else:
+        sushitips += float(p['tip_amount'])
+twelve = servertips *0.12
+servertips -= twelve
+sushitips += twelve
+
+print("Server tips: ${:0.2f} Sushi tips: ${:0.2f}".format(servertips, sushitips))
+
+
+
+"""
+
+******************** tried to get ticket name but it's not working, insert at line 44 ****************
+
+        if 'order_id' in payment:
+            order_id = payment['order_id']
+            order_url = 'https://connect.squareup.com/v2/orders/' + order_id
+            response = requests.get(order_url, headers=headers)
+            try:
+                order = json.loads(response.text)['order']
+                if 'ticket_name' in order:
+                    table_name = order['ticket_name']
+                else:
+                    table_name = 'no ticket name'
+            except KeyError:
+                table_name = 'error'
+        else:
+            table_name = 'no order id'
+"""
